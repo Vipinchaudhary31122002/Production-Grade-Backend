@@ -1,0 +1,77 @@
+services:
+
+  # ── FastAPI Backend ──────────────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # target: runtime
+    container_name: fastapi_app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # Database
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      # File storage
+      UPLOAD_DIR: /app/uploads
+      # App settings
+      APP_ENV: ${APP_ENV:-development}
+      SECRET_KEY: ${SECRET_KEY}
+    volumes:
+      # Persistent file uploads
+      - uploads_data:/app/uploads
+      # Live code reload in development (comment out in production)
+      - ./:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - backend_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+
+  # ── PostgreSQL Database ──────────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: postgres_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      # Persistent database storage
+      - postgres_data:/var/lib/postgresql/data
+      # Optional: place .sql init scripts here
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      # Expose only for local dev tools (e.g. DBeaver). Remove in production.
+      - "5432:5432"
+    networks:
+      - backend_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+
+# ── Named Volumes ────────────────────────────────────────────────────────────
+volumes:
+  postgres_data:
+    driver: local
+  uploads_data:
+    driver: local
+
+
+# ── Networks ─────────────────────────────────────────────────────────────────
+networks:
+  backend_net:
+    driver: bridge

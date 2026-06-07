@@ -1,29 +1,5 @@
-"""
-main.py — Application factory.
-
-OOP concepts applied:
-- Encapsulation: ``AppFactory`` owns the entire application-creation process.
-  External code calls ``AppFactory.create()`` and gets a ready-to-use
-  ``FastAPI`` instance — no setup details leak out.
-- Abstraction: ``main.py`` delegates middleware registration, exception
-  handling, and router mounting to dedicated classes/functions.
-- Single-Responsibility: This module only assembles the application;
-  each concern (middleware, logging, exceptions, routing) is handled by its
-  own module.
-"""
-
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-
-from src.config import settings
-from src.router import router
-from src.core.database import init_db
-from src.core.middleware import register_middleware
-from src.core.logger import setup_logging
-from src.exceptions import register_exception_handlers
-
-# Configure logging before anything else runs
-setup_logging()
 
 
 class AppFactory:
@@ -47,7 +23,7 @@ class AppFactory:
         """Async context manager: runs on startup (before ``yield``) and
         shutdown (after ``yield``)."""
         # ── Startup ──────────────────────────────────────────────────────
-        await init_db()
+        # await init_db()
 
         yield  # application is running
 
@@ -58,18 +34,18 @@ class AppFactory:
     def create(cls) -> FastAPI:
         """Build and return the fully-configured ``FastAPI`` application."""
         app = FastAPI(
-            title=settings.APP_NAME,
-            version="0.1.0",
-            debug=settings.DEBUG,
-            # Hide interactive docs in production to reduce attack surface
-            docs_url="/docs" if settings.DEBUG else None,
-            redoc_url="/redoc" if settings.DEBUG else None,
-            lifespan=cls._lifespan,
+            # title=settings.APP_NAME,
+            # version="0.1.0",
+            # debug=settings.DEBUG,
+            # # Hide interactive docs in production to reduce attack surface
+            # docs_url="/docs" if settings.DEBUG else None,
+            # redoc_url="/redoc" if settings.DEBUG else None,
+            # lifespan=cls._lifespan,
         )
 
-        register_middleware(app)
-        register_exception_handlers(app)
-        app.include_router(router)
+        # register_middleware(app)
+        # register_exception_handlers(app)
+        # app.include_router(router)
 
         return app
 

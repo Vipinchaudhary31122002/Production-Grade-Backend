@@ -18,8 +18,8 @@ import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
-from src.main import app
-from src.core.database import Base, get_session
+from app.main import app
+from app.core.database import Base, get_session
 
 
 # ── In-memory test database manager ──────────────────────────────────────────

@@ -21,9 +21,9 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 
 # ── Import all models so Alembic can detect them ──────────────────────────────
-from src.core.database import Base
-from src.modules.users.model import User          # noqa: F401
-from src.modules.auth.model import RefreshToken   # noqa: F401
+from app.core.database import Base
+from app.modules.users.model import User          # noqa: F401
+from app.modules.auth.model import RefreshToken   # noqa: F401
 # Add new models here as you create them
 
 
@@ -42,7 +42,7 @@ class MigrationRunner:
     @classmethod
     def _get_url(cls) -> str:
         """Read the database URL from application settings at migration time."""
-        from src.config import settings
+        from app.core.config import settings
         return settings.DATABASE_URL
 
     # ── Offline migration (generates SQL scripts) ─────────────────────────

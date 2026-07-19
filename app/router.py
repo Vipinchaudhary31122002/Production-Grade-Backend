@@ -6,7 +6,13 @@ class RouteRegister:
         self._app = app
 
     def register(self) -> None:
-        pass
+        self._auth()
+        self._user()
         
-    def _register_cold_email(self) -> None:
-        pass
+    def _auth(self) -> None:
+        from app.modules.auth.router import router
+        self._app.include_router(router)
+        
+    def _user(self) -> None:
+        from app.modules.users.router import router
+        self._app.include_router(router)
